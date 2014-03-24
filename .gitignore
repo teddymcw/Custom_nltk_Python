@@ -1,0 +1,7 @@
+*.pyc
+*.pyo
+.Python
+.DS_Store
+bin
+parts
+var
