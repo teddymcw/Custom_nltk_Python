@@ -2,6 +2,10 @@ import nltk
 from nltk import corpus #for eng_dictionary rt now
 from stop_words import sw, support_words
 
+from nltk.stem.wordnet import WordNetLemmatizer
+from nltk.corpus import wordnet as wn
+from nltk import ne_chunk, pos_tag, word_tokenize
+
 def gen_tokens(text):
 	""" str -> list 
 	call nltk's work_tokenize function on our text,
@@ -74,7 +78,7 @@ def compare_unusual_words(text):
     return sorted(unusual)
 
 #Begin Lem section 
-from nltk.stem.wordnet import WordNetLemmatizer
+
 lemmatizer = WordNetLemmatizer()
 lemmatize = lambda word: lemmatizer.lemmatize(word.lower())
 
@@ -97,6 +101,52 @@ def extract_interesting_lines(text):
 		if not line:
 			continue
 		yield line  #instead of do_something(line)
+
+#SYNSET SECTION
+
+def gen_all_lemmas(word):
+	""" str -> set 
+	"""
+	synsets = wn.synsets(word)
+	ls = list()
+	for i in synsets:
+		ls.append(i.lemma_names)
+	result = list()
+	for i in ls:
+		for y in i:
+			if y not in result:
+				result.append(y)
+	res = set(result)	
+	for lemma in res:
+		yield lemma
+
+def get_all_lemmas(word):
+	for word in gen_all_lemmas(word):
+		print(word)
+
+def play_with_lemmas(word):
+	""" str -> set 
+	"""
+	synsets = wn.synsets(word)
+	ls = list()
+	for i in synsets:
+		ls.append(i.lemma_names)
+	result = list()
+	for i in ls:
+		for y in i:
+			if y not in result:
+				result.append(y)
+	res = set(result)	
+	for word in res:
+		yield word
+
+#END SYNSET
+
+#START CHUNKING
+
+def get_entities(text):
+	entities = ne_chunk(pos_tag(word_tokenize(text)))
+	return entities
 
 
 def get_syn_words(word):

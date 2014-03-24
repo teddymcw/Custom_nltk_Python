@@ -1,7 +1,13 @@
 *.pyc
 *.pyo
+*.log
+*.db
 .Python
 .DS_Store
-bin
+include
+lib/
+bin/
+include/
+man
 parts
 var
