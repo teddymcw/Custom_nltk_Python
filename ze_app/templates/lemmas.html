@@ -1,0 +1,87 @@
+{% extends "template.html" %}
+{% block content %}
+
+<!-- <h1>Main </h1> -->
+Lemmas...
+
+<div class="answers">
+  <p> the_word = {{ the_word }} </p> 
+  <p> lemmas_of_given_word = {{ show_lemmas_of_given_word }} </p>
+</div>
+
+<div class="blank">
+</div>
+
+<div class="ugly">
+  <form action="/lemmas" method="POST">
+    <p>{{ form_single_word.single_word.label }} {{ form_single_word.single_word }} </p> <input type="submit"/>
+  </form>
+</div>
+
+  
+<script> 
+
+var {{ show_lemmas_of_given_word }};
+var lems = [ {{ show_lemmas_of_given_word }} ];
+var jlems = {% autoescape false %} {{ lemmas }} {% endautoescape %};
+lems = d3.shuffle(lems);
+
+function show_lem() {
+var svgWidth = 550;
+var svgHeight = 550;
+
+var ll = lems.length;
+var mid = ll / 2;
+var reasonable_rando = function getRandomArbitrary(min, max) {
+  								return Math.random() * (max - min) + min;
+							};
+
+var color = d3.scale.linear()
+				.domain([0, lems.length])
+				.range(["green", "orange"]);
+
+var x_coord = d3.scale.linear()
+						.domain([0, lems.length])
+						.range([30, svgWidth - 30]); 
+
+var y_coord = d3.scale.linear()
+						.domain([0, lems.length])
+						.range([30, svgHeight - 30]); 
+						//.range([0, (svgWidth - 10) / 100]); why the fuck doesn't that work?
+
+var svgContainer = d3.select("body").append("svg")
+										.attr({ width : svgWidth,
+												height : svgHeight});
+
+/*var lem_ells = svgContainer.selectAll("ellipse")
+										.data(jlems)
+										.enter()
+										.append("ellipse");
+
+var lem_ells_attrs = lem_ells
+					.attr("cx", function(d, i) { return  x_coord(mid - i * Math.random()); })
+                 	.attr("cy", function(d, i) { return  y_coord(i * Math.random()); })
+                 	.attr("rx", 16)
+                 	.attr("ry", 10)
+                 	.style("fill", function(d, i) { return color(i)}); */
+
+
+var text = svgContainer.selectAll("text")
+                        .data(jlems)
+                        .enter()
+                        .append("text");
+
+var textLabels = text //random function is stupid, distance should be based on lemma distance
+                 .attr("x", function(d, i) { return x_coord(reasonable_rando(i, ll - i)) * 1.1; })
+                 .attr("y", function(d, i) { return y_coord(reasonable_rando(i, ll - i)) * 1.1; })
+                 .text( function (d, i) { return i + " " + d; })
+                 .attr("font-family", "sans-serif")
+                 .attr("font-size", "12px")
+                 .attr("text-anchor","middle")
+                 .attr("fill", function(d,i) { return color(i) });
+    }
+window.onload = show_lem;
+
+</script>
+
+{% endblock %}

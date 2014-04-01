@@ -6,12 +6,30 @@
   <script type="text/javascript">
 		    			
   </script>
+  <style> 
+      svg {
+        border-style: solid;
+        border-width: 1px;
+        border-color: gray;
+        position:relative;left:300px;
+      }
+  </style>
   <title>Main</title>
 </head>
 
 <body>
-<h1>Main </h1>
-Hello!
+ <!-- ERROR SECTION -->  
+      {% for message in get_flashed_messages() %}
+         <div class="flash"><h1>{{ message }}</h1></div> <br/><br/>
+      {% endfor %}
+      {% if error %}
+        <p class="error"><strong style="color: red;">Error: </strong> {{ error }} </p> <br/><br/>
+      {% endif %}
+  <!-- END ERROR SECTION -->
+
+        {% block content %}
+        
+        {% endblock %}
 
 
   

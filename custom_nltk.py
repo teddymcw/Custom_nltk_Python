@@ -7,24 +7,31 @@ from nltk.corpus import wordnet as wn
 from nltk import ne_chunk, pos_tag, word_tokenize
 
 def gen_tokens(text):
-	""" str -> list 
+	""" str -> gen 
 	call nltk's work_tokenize function on our text,
 	which differs from just splitting our list by spaces"""
 	tokens = nltk.word_tokenize(text)
-	punct = [',' , '.' , '?' , '!']
-	tokens = [word[:-1] for word in tokens if word[-1] in punct]
+	#punct = [',' , '.' , '?' , '!']
+	#subtract_period_tokens = [word[:-1] for word in tokens if word[-1] in punct]
 	"""for word in tokens:
 		if word[-1] == '.':
 			word = word[:-1]""" #why can we have just a floating fucking string in there?
+	#tokens = (tokens - set(subtract_period_tokens))
 	for word in tokens:
 		yield word
+
+def gen_lowercase_tokens(text):
+	""" str -> gen 
+	maintain generator type for lowercase words, 
+	useful for comparing against stop word lists"""
+	for word in gen_tokens(text):
+		yield word.lower()
 
 def get_non_stop_words(text):
 	""" str -> list 
 	take a text file and compare its tokens against custom stop words list 
 	returning only what we deem acceptable words"""
-	tokens = gen_tokens(text)
-	tokens = [token.lower() for token in tokens]
+	tokens = gen_lowercase_tokens(text)
 	non_stop_words = [word for word in tokens if word not in sw]
 	return non_stop_words
 
@@ -33,10 +40,30 @@ def get_content_percentage(text):
 	gives percentage of words that are not listed in the support words list
 	by returning numbers of tokens over number of total tokens. Note the difference between
 	this ratio and the lexical diversity ratio""" 
+	ns_words = get_non_stop_words(text)
+	fl_nswl = float(len(ns_words))
+	text_tokens = gen_tokens(text) #note non-stop words are not being used here
+	content = [word for word in text_tokens if word.lower() not in support_words]
+	fl_content = float(len(content))
+	try:
+		result = round(fl_nswl / fl_content, 2) * 100
+	except ZeroDivisionError:
+		pass
+		result = 0
+		#error = "caught the zero division error"
+		#return error
+	return "{}".format(result)
+
+def get_text_and_content_length(text):
+	""" str -> float, float
+	return length of text list with stop_words omitted and length of 'content'
+	defined as non 'support words' """ 
+	ns_words_list = get_non_stop_words(text)
+	fl_nswl = float(len(ns_words_list))
 	text = gen_tokens(text) #note non-stop words are not being used here
 	content = [word for word in text if word not in support_words]
-	result = round(len(content) / len(text), 2) * 100
-	return "{}".format(result)
+	fl_content = float(len(content))
+	return fl_nswl, fl_content
 
 def get_substance(text): #NOTE THAT THIS IS A STUB FOR NOW
 	""" str -> list 
@@ -74,8 +101,9 @@ def compare_unusual_words(text):
     only_alpha_set = set(w.lower() for w in each_word_set if w.isalpha())
     sane_eng_dict = corpus.words.words()
     english_vocab = gen_english_vocab(sane_eng_dict)
-    unusual = only_alpha_set.difference(english_vocab)
-    return sorted(unusual)
+    unusual = sorted(only_alpha_set.difference(english_vocab))
+    plain_unusual_words_str = ", ".join(unusual)
+    return plain_unusual_words_str
 
 #Begin Lem section 
 
@@ -121,8 +149,12 @@ def gen_all_lemmas(word):
 		yield lemma
 
 def get_all_lemmas(word):
-	for word in gen_all_lemmas(word):
-		print(word)
+	""" (single word) str -> (word list) str
+	just one applicable definition of a lemma is 
+	A subsidiary proposition assumed to be valid 
+	and used to demonstrate a principal proposition"""
+	all_lemmas = [word for word in gen_all_lemmas(word)]
+	return ', '.join(all_lemmas)
 
 def play_with_lemmas(word):
 	""" str -> set 
@@ -145,11 +177,14 @@ def play_with_lemmas(word):
 #START CHUNKING
 
 def get_entities(text):
+	""" str -> Tree('X', list[(tuple pairs)], Trees(...))
+	uses pos 'parts of speech' tagging""" 
 	entities = ne_chunk(pos_tag(word_tokenize(text)))
 	return entities
 
 
 def get_syn_words(word):
+	""" (single word) str -> str """
 	syn_word = nltk.wordnet.wordnet.synsets(word)[0]
 	return syn_word
 

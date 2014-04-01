@@ -1,0 +1,15 @@
+{% extends "template.html" %}
+{% block content %}
+
+<h1>Main </h1>
+Hello!
+
+<div class="ugly">
+  <form action="/content_percentage" method="POST">
+    <p>{{ form.play.label }} {{ form.play }} </p> <input type="submit"/>
+  </form>
+</div>
+
+
+
+{% endblock %}

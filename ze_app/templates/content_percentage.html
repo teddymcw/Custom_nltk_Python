@@ -1,0 +1,102 @@
+{% extends "template.html" %}
+{% block content %}
+
+<!-- <h1>Main </h1> -->
+Word...
+
+<div class="answers">
+  <p class="output"> content percentage = % {{ content_percentage }} </p>
+  <p> non-stop words = {{ fl_nswl }} </p> 
+  <p> content_words = {{ fl_content }} </p>
+  <p> lex_diversity = {{ lex_diversity }} </p>
+  <p> unusual_words = {{ unusual_words }} </p>
+</div>
+
+<div class="blank">
+</div>
+
+<div class="ugly">
+  <form action="/lemmas" method="POST">
+    <p>{{ form_single_word.single_word.label }} {{ form_single_word.single_word }} </p> <input type="submit"/>
+  </form>
+</div>
+
+  
+<script> 
+var cont_per = {{ content_percentage }};
+var fl_nswl = {{ fl_nswl }};
+var fl_content = {{ fl_content }};
+
+//d3 vars
+function make_D3() {
+	var svgWidth = 550;
+	var svgHeight = 550;
+	//making arrays of variables so D3 can use them
+	var con_per = [cont_per];
+	var fln = [fl_nswl];
+	var flc = [fl_content];
+	var con_per_text = ["all words"];
+	var flc_text = ["content words"];
+	var fln_text = ["without stop words"];
+	//var aP = d3.select(".blank").append("p");
+
+	var svgContainer = d3.select("body").append("svg")
+										.attr({ width : svgWidth,
+												height : svgHeight});
+
+	var hunnedPercent = svgContainer.selectAll("circles")
+										.data(con_per)
+										.enter()
+										.append("circle");
+	var percen = hunnedPercent.attr({
+									cx : svgWidth / 2,
+									cy : svgHeight / 2,
+									r : svgWidth / 2 - 2,
+									//r : function(d) { return d; }, 
+									opacity : .2,
+									fill : "grey" 
+								});
+
+	var bound_flc_data = svgContainer.selectAll("circles")
+										.data(flc)
+										.enter()
+										.append("circle");
+	var flc_text = svgContainer.selectAll("text")
+				                        .data(con_per_text)
+				                        .enter()
+				                        .append("text");
+	var flc_circle = bound_flc_data.attr({
+									cx : svgWidth / 2,
+									cy : svgHeight / 2,
+									r : function(d) { return ((svgWidth / 2 - 2) / 100) * d; },
+									//r : function(d) { return d; }, 
+									opacity : .3,
+									fill : "red" 
+								});
+	var flc_text_labels = flc_text.attr({
+									cx : svgWidth / 2,
+									cy : svgHeight / 2,
+									r : function(d) { return ((svgHeight / 2)); }
+	});
+
+
+	var bound_fln_data = svgContainer.selectAll("circles")
+										.data(fln)
+										.enter()
+										.append("circle");
+	var fln_circle = bound_fln_data.attr({
+									cx : svgWidth / 2,
+									cy : svgHeight / 2,
+									r : function(d) { return ((svgWidth / 2 - 2) / 100) * d; },
+									//r : function(d) { return d; }, 
+									opacity : .3,
+									fill : "blue" 
+								});
+
+	};
+
+window.onload = make_D3;
+
+</script>
+
+{% endblock %}

@@ -13,7 +13,9 @@ a = [al for al in alpha]
 sw1 = set(sw + a)
 #print(sorted(sw1))
 
+#printing will list something horizontally
 
+#vertical listing happens when a value is returned
 old_sw = ['i',
  'me',
  'my',
