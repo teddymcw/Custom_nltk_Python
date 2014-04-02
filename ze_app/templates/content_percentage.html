@@ -1,31 +1,37 @@
 {% extends "template.html" %}
 {% block content %}
 
-<!-- <h1>Main </h1> -->
-Word...
-
 <div class="answers">
-  <p class="output"> content percentage = % {{ content_percentage }} </p>
-  <p> non-stop words = {{ fl_nswl }} </p> 
-  <p> content_words = {{ fl_content }} </p>
-  <p> lex_diversity = {{ lex_diversity }} </p>
-  <p> unusual_words = {{ unusual_words }} </p>
+  <!-- yes this is ugly -->
+  <p class="output"> content percentage = % {{ content_percentage }} , non-stop words = {{ fl_nswl }} , content_words = {{ fl_content }} , lex_diversity = {{ lex_diversity }} </p>
+  <p> unusual words = {{ unusual_words }} </p>
+  <p> freq dist = {{ print_fd }} </p>
+  
 </div>
+
+<span class="freq-dist">
+</span>
 
 <div class="blank">
 </div>
 
-<div class="ugly">
+----
+<div class="single-word">
   <form action="/lemmas" method="POST">
-    <p>{{ form_single_word.single_word.label }} {{ form_single_word.single_word }} </p> <input type="submit"/>
+    <p>Enter {{ form_single_word.single_word.label }} {{ form_single_word.single_word }} </p> <input type="submit"/>
+    <p> chart showing content percentages, labels added later -> </p>
   </form>
 </div>
+
+
 
   
 <script> 
 var cont_per = {{ content_percentage }};
+//fl is float
 var fl_nswl = {{ fl_nswl }};
 var fl_content = {{ fl_content }};
+var freq_dist = {% autoescape false %} {{ freq_dist }} {% endautoescape %};
 
 //d3 vars
 function make_D3() {
@@ -38,6 +44,7 @@ function make_D3() {
 	var con_per_text = ["all words"];
 	var flc_text = ["content words"];
 	var fln_text = ["without stop words"];
+
 	//var aP = d3.select(".blank").append("p");
 
 	var svgContainer = d3.select("body").append("svg")
@@ -92,9 +99,62 @@ function make_D3() {
 									opacity : .3,
 									fill : "blue" 
 								});
+	var fd_svgW = 900;
+	var fd_svgH = 100;
+	var barWidth = fd_svgW / freq_dist.length;
 
-	};
+	var maxd = 0;
+	for (var i=0; i<freq_dist.length; i++) { 
+		if (freq_dist[i][1] > maxd) 
+			maxd = freq_dist[i][1];  
+	}
 
+	var hack = [];
+
+	for (var i=0; i<freq_dist.length; i++) {
+		hack[i] = { "text" : freq_dist[i][0], "num" : freq_dist[i][1] };
+	}
+	console.log(hack);
+
+	var y = d3.scale.linear()
+		    .domain([0, maxd])
+		    .range([fd_svgH, 0]);
+ 
+ 	var color = d3.scale.linear()
+ 				.domain([0, maxd])
+ 				.range(["blue", "red"]);
+
+	var fd_svg = d3.select(".freq-dist").append("svg")
+										.attr({ width : fd_svgW,
+												height : fd_svgH });
+
+	var bar = fd_svg.selectAll("g")
+      .data(hack)
+      .enter()
+      .append("g")
+      .attr("transform", function(d, i) { return "translate(" + i * barWidth + ", 0)"; });
+
+    bar.append("rect")
+      .attr("y", function(d) { return y(d.num); })
+      .attr("height", function(d, i) { return fd_svgH - y(d.num); })
+      .attr("width", barWidth - 1)
+      .style("fill", function(d,i) { return color(i); });
+
+    bar.append("text")
+      .attr("x", barWidth - 50) //this is hard coded, gotta go...
+      .attr("y", function(d) { return y(d.num) 	; })
+      .attr("dy", ".75em")
+      .text(function(d) { return d.text; })
+      .attr("font-family", "sans-serif")
+                 .attr("font-size", "12px")
+                 .attr("text-anchor","middle")
+                 .attr("fill", "white")
+
+      .on("click", function(d,i) {
+		bar.style("fill", "black")
+		d3.select(this).style("fill", "red");
+		});
+}
 window.onload = make_D3;
 
 </script>

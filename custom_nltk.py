@@ -80,8 +80,19 @@ def get_freq_dist(text):
     retrieve frequency distribution of each 'substantive' word in text using nltk"""
     substantive = get_non_stop_words(text)
     text_class = nltk.Text(substantive)
-    fdist = nltk.FreqDist(text_class)
-    return fdist
+    freq_dist = nltk.FreqDist(text_class)
+    return freq_dist
+
+def get_printable_freq_dist(text):  
+	first_ten = get_freq_dist(text).items()[:10]
+	fd_flat_ls = []
+	for i in first_ten:
+		a, b = i
+		fd_flat_ls.append(a)
+		fd_flat_ls.append(str(b) + ', ')
+	return ' '.join(fd_flat_ls)
+		#print("{0} {1},".format(a, b))   
+		#must be a better and more obvious way to get format desired than what is above
 
 def get_lexical_diversity_ratio(text):
 	""" str -> float 
@@ -120,7 +131,7 @@ def get_word_features(text):
 	return lemmed
 #End Lem Section
 
-def extract_interesting_lines(text):
+def extract_interesting_lines(text): #Stub for now
 	""" str -> generator object """
 	for line in text:
 		line = line.strip()
