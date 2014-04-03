@@ -11,12 +11,6 @@ def gen_tokens(text):
 	call nltk's work_tokenize function on our text,
 	which differs from just splitting our list by spaces"""
 	tokens = nltk.word_tokenize(text)
-	#punct = [',' , '.' , '?' , '!']
-	#subtract_period_tokens = [word[:-1] for word in tokens if word[-1] in punct]
-	"""for word in tokens:
-		if word[-1] == '.':
-			word = word[:-1]""" #why can we have just a floating fucking string in there?
-	#tokens = (tokens - set(subtract_period_tokens))
 	for word in tokens:
 		yield word
 
@@ -53,6 +47,23 @@ def get_content_percentage(text):
 		#error = "caught the zero division error"
 		#return error
 	return "{}".format(result)
+
+def get_cont_perc_int(text):
+	""" str -> int
+	gives percentage of words that are not listed in the support words list
+	by returning numbers of tokens over number of total tokens. Note the difference between
+	this ratio and the lexical diversity ratio""" 
+	ns_words = get_non_stop_words(text)
+	fl_nswl = float(len(ns_words))
+	text_tokens = gen_tokens(text) #note non-stop words are not being used here
+	content = [word for word in text_tokens if word.lower() not in support_words]
+	fl_content = float(len(content))
+	try:
+		result = round(fl_nswl / fl_content, 2) * 100
+	except ZeroDivisionError:
+		error = "caught the zero division error"
+		return error
+	return result
 
 def get_text_and_content_length(text):
 	""" str -> float, float
@@ -205,3 +216,11 @@ def get_synonyms(word):
 	names = [syn.name for syn in all_syns]
 	return ls_all_syns, names
 
+def clean_additional_punct(): #stub for the moment
+	#punct = [',' , '.' , '?' , '!']
+	#subtract_period_tokens = [word[:-1] for word in tokens if word[-1] in punct]
+	"""for word in tokens:
+		if word[-1] == '.':
+			word = word[:-1]""" #why can we have just a floating fucking string in there?
+	#tokens = (tokens - set(subtract_period_tokens))
+	yield 1
