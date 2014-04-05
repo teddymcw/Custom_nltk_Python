@@ -1,6 +1,7 @@
 import nltk
 from nltk import corpus #for eng_dictionary rt now
 from stop_words import sw, support_words
+from collections import Counter
 
 from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.corpus import wordnet as wn
@@ -21,6 +22,19 @@ def gen_lowercase_tokens(text):
 	for word in gen_tokens(text):
 		yield word.lower()
 
+def gen_ns_words(text):
+	for word in get_non_stop_words(text):
+		yield word
+
+def gen_only_nstop_and_nsupport_words(text):
+	""" str -> gen
+	generate words not in stop or support words list"""
+	non_support = [word for word in gen_lowercase_tokens(text) if word not in support_words]
+	#maybe write a generator expression for the above
+	for word in non_support:
+		yield word
+
+#Functions for printing values
 def get_non_stop_words(text):
 	""" str -> list 
 	take a text file and compare its tokens against custom stop words list 
@@ -50,16 +64,14 @@ def get_content_percentage(text):
 
 def get_cont_perc_int(text):
 	""" str -> int
-	gives percentage of words that are not listed in the support words list
-	by returning numbers of tokens over number of total tokens. Note the difference between
-	this ratio and the lexical diversity ratio""" 
-	ns_words = get_non_stop_words(text)
-	fl_nswl = float(len(ns_words))
-	text_tokens = gen_tokens(text) #note non-stop words are not being used here
-	content = [word for word in text_tokens if word.lower() not in support_words]
-	fl_content = float(len(content))
+	Number of words in text - stop words / number of words in text - stop words and 
+	support words. Note the difference between this ratio and the lexical diversity ratio, 
+	which only accounts for unique words.""" 
+	fl_ns_words = float(len(get_non_stop_words(text)))
+	#note stop words are included here
+	fl_ns_ns_words = float(len(list(gen_only_nstop_and_nsupport_words(text))))
 	try:
-		result = round(fl_nswl / fl_content, 2) * 100
+		result = round(fl_ns_words / fl_ns_ns_words, 2) * 100
 	except ZeroDivisionError:
 		error = "caught the zero division error"
 		return error
@@ -89,8 +101,8 @@ def get_substance(text): #NOTE THAT THIS IS A STUB FOR NOW
 def get_freq_dist(text):
     """ str -> FreqDist 
     retrieve frequency distribution of each 'substantive' word in text using nltk"""
-    substantive = get_non_stop_words(text)
-    text_class = nltk.Text(substantive)
+    ns_words = get_non_stop_words(text)
+    text_class = nltk.Text(ns_words)
     freq_dist = nltk.FreqDist(text_class)
     return freq_dist
 
@@ -104,6 +116,13 @@ def get_printable_freq_dist(text):
 	return ' '.join(fd_flat_ls)
 		#print("{0} {1},".format(a, b))   
 		#must be a better and more obvious way to get format desired than what is above
+
+def get_counter_class_freq_dist(text):
+	"""enables use of Counter class and provides mroe ways to test"""
+	text_ls = text.split() #default value of split() is all white space
+	coun = Counter(text_ls)
+	coun = [word for word in coun.items() if word[0].lower() not in sw]
+	return coun 
 
 def get_lexical_diversity_ratio(text):
 	""" str -> float 
@@ -132,12 +151,8 @@ def compare_unusual_words(text):
 lemmatizer = WordNetLemmatizer()
 lemmatize = lambda word: lemmatizer.lemmatize(word.lower())
 
-def gen_words(text):
-	for word in get_non_stop_words(text):
-		yield word
-
 def get_word_features(text):
-	words = gen_words(text)
+	words = gen_ns_words(text)
 	lemmed = [lemmatize(word) for word in words]
 	return lemmed
 #End Lem Section
