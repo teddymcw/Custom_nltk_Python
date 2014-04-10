@@ -22,7 +22,12 @@ def gen_lowercase_tokens(text):
 	for word in gen_tokens(text):
 		yield word.lower()
 
+#note for this module's purpose the default type for stop_words will be lowercase
 def gen_ns_words(text):
+	""" str -> gen 
+	gen type for lowercase non stop words 
+	"""
+	#this needs to be a better gen function
 	for word in get_non_stop_words(text):
 		yield word
 
@@ -43,15 +48,26 @@ def get_non_stop_words(text):
 	non_stop_words = [word for word in tokens if word not in sw]
 	return non_stop_words
 
+def get_real_content_percentage(text):
+	""" str -> str(int)
+	gives percentage of words deemed to have content. This is calculated
+	by taking the total number of word tokens minus stop words and support words 
+	divided by the total number of word tokens""" 
+	all_word_tokens_ls = list(gen_tokens(text))
+	content_tokens = list(gen_only_nstop_and_nsupport_words(text))
+	return float(len(content_tokens)) / float(len(all_word_tokens_ls))
+
+
+
 def get_content_percentage(text):
 	""" str -> str(int)
 	gives percentage of words that are not listed in the support words list
-	by returning numbers of tokens over number of total tokens. Note the difference between
-	this ratio and the lexical diversity ratio""" 
+	by returning numbers of content tokens over number of total tokens. 
+	Note the difference between this ratio and the lexical diversity ratio""" 
 	ns_words = get_non_stop_words(text)
-	fl_nswl = float(len(ns_words))
-	text_tokens = gen_tokens(text) #note non-stop words are not being used here
-	content = [word for word in text_tokens if word.lower() not in support_words]
+	fl_nswl = float(len(ns_words)) 
+	#note non-stop words are NOT being used here
+	content = [word for word in gen_tokens(text) if word.lower() not in support_words]
 	fl_content = float(len(content))
 	try:
 		result = round(fl_nswl / fl_content, 2) * 100
