@@ -80,8 +80,7 @@ def get_freq_dist(text):
     """ str -> FreqDist 
     retrieve frequency distribution of each 'substantive' word in text using nltk
     """
-    ns_words = list(gen_ns_words(text))
-    
+    ns_words = list(gen_ns_words(text)) 
     text_class = nltk.Text(ns_words)
     freq_dist = nltk.FreqDist(text_class)
     return freq_dist
@@ -173,16 +172,16 @@ def gen_all_lemmas(word):
 	for lemma in res:
 		yield lemma
 
-def get_all_lemmas(word):
+def get_all_lemmas(single_word):
 	""" (single word) str -> (word list) str
 	just one applicable definition of a lemma is 
 	A subsidiary proposition assumed to be valid 
 	and used to demonstrate a principal proposition"""
-	all_lemmas = [word for word in gen_all_lemmas(word)]
+	all_lemmas = [word for word in gen_all_lemmas(single_word)]
 	return ', '.join(all_lemmas)
 
-def play_with_lemmas(word):
-	""" str -> set 
+def gen_play_with_lemmas(word):
+	""" str -> gen 
 	"""
 	synsets = wn.synsets(word)
 	ls = list()
@@ -216,13 +215,4 @@ def get_synonyms(word):
 	all_syns = nltk.wordnet.wordnet.synsets(word)
 	ls_all_syns = [syn.lemmas for syn in all_syns]
 	names = [syn.name for syn in all_syns]
-	return ls_all_syns, names
-
-def clean_additional_punct(): #stub for the moment
-	#punct = [',' , '.' , '?' , '!']
-	#subtract_period_tokens = [word[:-1] for word in tokens if word[-1] in punct]
-	"""for word in tokens:
-		if word[-1] == '.':
-			word = word[:-1]""" #why can we have just a floating fucking string in there?
-	#tokens = (tokens - set(subtract_period_tokens))
-	yield 1
+	return (ls_all_syns, names)

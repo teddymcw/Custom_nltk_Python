@@ -1,9 +1,11 @@
 #self.assertRaises(ZeroDivisionError, get_cont_perc_int, str())
 
-from custom_nltk import word_tokenize
-from custom_nltk import gen_tokens, gen_ns_words, get_content_percentage, get_cont_perc_int, get_text_and_content_length, get_substance
-from custom_nltk import get_freq_dist, get_printable_freq_dist, get_counter_class_freq_dist, get_lexical_diversity_ratio, gen_english_vocab
-from custom_nltk import compare_unusual_words, get_all_lemmas, play_with_lemmas
+from custom_nltk import word_tokenize,
+gen_tokens, gen_cleaner_words, gen_lowercase_tokens, gen_ns_words, gen_ns_and_nsup_words
+get_text_len_and_content_len, get_content_percentage, get_true_substance,
+get_freq_dist, get_printable_freq_dist, get_counter_class_freq_dist, get_lexical_diversity_ratio, 
+gen_lower_english_vocab, compare_unusual_words, get_word_features, extract_interesting_lines
+gen_all_lemmas, get_all_lemmas, gen_play_with_lemmas, get_entities, get_syn_words, get_synonyms
 import unittest
 import random
 import nltk 
