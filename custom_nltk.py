@@ -15,6 +15,13 @@ def gen_tokens(text):
 	for word in nltk.word_tokenize(text):
 		yield word
 
+def gen_cleaner_words(text):
+	""" str -> str 
+	removes commonly 'attached' punctuation marks such as ',''.''*word*' etc.
+	"""
+	for i in list(gen_tokens(text)):
+		yield i.translate(None, "!@#$%^&*().,[]+=-_`~<>?")
+
 def gen_lowercase_tokens(text):
 	""" str -> gen 
 	maintain generator type for lowercase words, 
@@ -27,7 +34,7 @@ def gen_ns_words(text):
 	""" str -> gen 
 	need non stop words before non support words
 	"""
-	for i in (word for word in gen_tokens(text) if word.lower() not in sw):
+	for i in (word for word in gen_cleaner_words(text) if word.lower() not in sw):
 		yield i
 
 #note for this module's purpose the default type for stop_words will be lowercase
@@ -38,22 +45,13 @@ def gen_ns_and_nsup_words(text):
 	for i in (word for word in gen_ns_words(text) if word.lower() not in support_words):
 		yield i
 
-def extra_clean_words(text):
-	""" str -> str 
-	removes commonly 'attached' punctuation marks such as ',''.''*word*' etc.
-	"""
-	for i in list(gen_ns_words(text)):
-		i.replace('*','')
-		yield i 
-
-
 def get_text_len_and_content_len(text):
 	""" str -> float, float
 	return length of text list with stop_words omitted and length of 'content'
 	defined as non 'support words' """ 
 	num_ns_tokens = float(len(list(gen_ns_words(text))))
 	num_content_tokens = float(len(list(gen_ns_and_nsup_words(text))))
-	return (num_ns_tokens, num_content_tokens)`
+	return (num_ns_tokens, num_content_tokens)
 
 def get_content_percentage(text):
 	""" str -> float
@@ -80,7 +78,8 @@ def gen_true_substance(text): #NOTE THAT THIS IS A STUB FOR NOW
 
 def get_freq_dist(text):
     """ str -> FreqDist 
-    retrieve frequency distribution of each 'substantive' word in text using nltk"""
+    retrieve frequency distribution of each 'substantive' word in text using nltk
+    """
     ns_words = list(gen_ns_words(text))
     
     text_class = nltk.Text(ns_words)
@@ -88,6 +87,9 @@ def get_freq_dist(text):
     return freq_dist
 
 def get_printable_freq_dist(text):  
+	""" str -> str 
+	function to essentially pretty print the freq_dist values for readability
+	"""
 	first_ten = get_freq_dist(text).items()[:10]
 	fd_flat_ls = []
 	for i in first_ten:
@@ -99,7 +101,9 @@ def get_printable_freq_dist(text):
 		#must be a better and more obvious way to get format desired than what is above
 
 def get_counter_class_freq_dist(text):
-	"""enables use of Counter class and provides mroe ways to test"""
+	""" str -> Counter
+	enables use of Counter class and provides more ways to test
+	"""
 	text_ls = text.split() #default value of split() is all white space
 	coun = Counter(text_ls)
 	coun = [word for word in coun.items() if word[0].lower() not in sw]
@@ -109,20 +113,23 @@ def get_lexical_diversity_ratio(text):
 	""" str -> float 
 	lexical diversity is calculated by taking the number 
 	of unique words over the number of total words"""
-	return round(float(len(set(get_non_stop_words(text))) / float(len(get_non_stop_words(text)))), 5)
+	return round(float(len(set(gen_ns_words(text))) / float(len(gen_ns_words(text)))), 5)
 
-def gen_english_vocab(dictionary):
+def gen_lower_english_vocab(dictionary):
+	""" str -> gen 
+	yields a lower case gen object of words passed in to a dictionary 
+	"""
 	sane_dictionary = set([word.lower() for word in dictionary])
-	for word in sane_dictionary:
-		yield word
+	for i in (word.lower() for word in sane_dictionary):
+		yield i 
 
 def compare_unusual_words(text):
     """ str -> set 
     compare text to words in unix english dictionary and return alphabetized set"""
-    each_word_set = set(get_non_stop_words(text))
+    each_word_set = set(gen_ns_words(text))
     only_alpha_set = set(w.lower() for w in each_word_set if w.isalpha())
     sane_eng_dict = corpus.words.words()
-    english_vocab = gen_english_vocab(sane_eng_dict)
+    english_vocab = gen_lower_english_vocab(sane_eng_dict)
     unusual = sorted(only_alpha_set.difference(english_vocab))
     plain_unusual_words_str = ", ".join(unusual)
     return plain_unusual_words_str
