@@ -10,114 +10,79 @@ from nltk import ne_chunk, pos_tag, word_tokenize
 def gen_tokens(text):
 	""" str -> gen 
 	call nltk's work_tokenize function on our text,
-	which differs from just splitting our list by spaces"""
-	tokens = nltk.word_tokenize(text)
-	for word in tokens:
+	which differs from just splitting our list by spaces
+	"""
+	for word in nltk.word_tokenize(text):
 		yield word
 
 def gen_lowercase_tokens(text):
 	""" str -> gen 
 	maintain generator type for lowercase words, 
-	useful for comparing against stop word lists"""
+	useful for quick comparisons against certain stop word lists
+	"""
 	for word in gen_tokens(text):
 		yield word.lower()
 
-#note for this module's purpose the default type for stop_words will be lowercase
 def gen_ns_words(text):
 	""" str -> gen 
-	gen type for lowercase non stop words 
+	need non stop words before non support words
 	"""
-	#this needs to be a better gen function
-	for word in get_non_stop_words(text):
-		yield word
+	for i in (word for word in gen_tokens(text) if word.lower() not in sw):
+		yield i
 
-def gen_only_nstop_and_nsupport_words(text):
-	""" str -> gen
-	generate words not in stop or support words list"""
-	non_support = [word for word in gen_lowercase_tokens(text) if word not in support_words]
-	#maybe write a generator expression for the above
-	for word in non_support:
-		yield word
+#note for this module's purpose the default type for stop_words will be lowercase
+def gen_ns_and_nsup_words(text):
+	""" str -> gen 
+	generate words not in stop or support words list 
+	"""
+	for i in (word for word in gen_ns_words(text) if word.lower() not in support_words):
+		yield i
 
-#Functions for printing values
-def get_non_stop_words(text):
-	""" str -> list 
-	take a text file and compare its tokens against custom stop words list 
-	returning only what we deem acceptable words"""
-	tokens = gen_lowercase_tokens(text)
-	non_stop_words = [word for word in tokens if word not in sw]
-	return non_stop_words
-
-def get_real_content_percentage(text):
-	""" str -> str(int)
-	gives percentage of words deemed to have content. This is calculated
-	by taking the total number of word tokens minus stop words and support words 
-	divided by the total number of word tokens""" 
-	all_word_tokens_ls = list(gen_tokens(text))
-	content_tokens = list(gen_only_nstop_and_nsupport_words(text))
-	return float(len(content_tokens)) / float(len(all_word_tokens_ls))
+def extra_clean_words(text):
+	""" str -> str 
+	removes commonly 'attached' punctuation marks such as ',''.''*word*' etc.
+	"""
+	for i in list(gen_ns_words(text)):
+		i.replace('*','')
+		yield i 
 
 
-
-def get_content_percentage(text):
-	""" str -> str(int)
-	gives percentage of words that are not listed in the support words list
-	by returning numbers of content tokens over number of total tokens. 
-	Note the difference between this ratio and the lexical diversity ratio""" 
-	ns_words = get_non_stop_words(text)
-	fl_nswl = float(len(ns_words)) 
-	#note non-stop words are NOT being used here
-	content = [word for word in gen_tokens(text) if word.lower() not in support_words]
-	fl_content = float(len(content))
-	try:
-		result = round(fl_nswl / fl_content, 2) * 100
-	except ZeroDivisionError:
-		pass
-		result = 0
-		#error = "caught the zero division error"
-		#return error
-	return "{}".format(result)
-
-def get_cont_perc_int(text):
-	""" str -> int
-	Number of words in text - stop words / number of words in text - stop words and 
-	support words. Note the difference between this ratio and the lexical diversity ratio, 
-	which only accounts for unique words.""" 
-	fl_ns_words = float(len(get_non_stop_words(text)))
-	#note stop words are included here
-	fl_ns_ns_words = float(len(list(gen_only_nstop_and_nsupport_words(text))))
-	try:
-		result = round(fl_ns_words / fl_ns_ns_words, 2) * 100
-	except ZeroDivisionError:
-		error = "caught the zero division error"
-		return error
-	return result
-
-def get_text_and_content_length(text):
+def get_text_len_and_content_len(text):
 	""" str -> float, float
 	return length of text list with stop_words omitted and length of 'content'
 	defined as non 'support words' """ 
-	ns_words_list = get_non_stop_words(text)
-	fl_nswl = float(len(ns_words_list))
-	text = gen_tokens(text) #note non-stop words are not being used here
-	content = [word for word in text if word not in support_words]
-	fl_content = float(len(content))
-	return fl_nswl, fl_content
+	num_ns_tokens = float(len(list(gen_ns_words(text))))
+	num_content_tokens = float(len(list(gen_ns_and_nsup_words(text))))
+	return (num_ns_tokens, num_content_tokens)`
 
-def get_substance(text): #NOTE THAT THIS IS A STUB FOR NOW
+def get_content_percentage(text):
+	""" str -> float
+	number of words in text - stop words and support words / number of tokens in text. 
+	Note the difference between this ratio and the lexical diversity ratio, 
+	which only accounts for unique words.
+	"""  
+	try: 
+		result = float(len(list(gen_ns_and_nsup_words(text)))) / float(len(list(gen_tokens(text))))
+		result = round(result, 2)
+	except ZeroDivisionError:
+		pass
+		result = 0
+	return result #any string conversion will be done in the controller
+
+def gen_true_substance(text): #NOTE THAT THIS IS A STUB FOR NOW
 	""" str -> list 
 	take a text file and compare its tokens against custom stop words list 
 	returning only what we deem substantive words"""
+	#need a whole new list of substantial words
 	substance_words = ['real', 'fancy', 'words']
-	tokens = gen_tokens(text)
-	tokens = [token.lower() for token in tokens]
-	substantive = [word for word in tokens if word not in substance_words]
-	return substantive
+	for i in (word for word in gen_ns_and_nsup_words(text) if word.lower() not in substance_words):
+		yield i 
 
 def get_freq_dist(text):
     """ str -> FreqDist 
     retrieve frequency distribution of each 'substantive' word in text using nltk"""
-    ns_words = get_non_stop_words(text)
+    ns_words = list(gen_ns_words(text))
+    
     text_class = nltk.Text(ns_words)
     freq_dist = nltk.FreqDist(text_class)
     return freq_dist
@@ -234,7 +199,6 @@ def get_entities(text):
 	uses pos 'parts of speech' tagging""" 
 	entities = ne_chunk(pos_tag(word_tokenize(text)))
 	return entities
-
 
 def get_syn_words(word):
 	""" (single word) str -> str """

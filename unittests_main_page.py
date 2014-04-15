@@ -1,7 +1,7 @@
 #self.assertRaises(ZeroDivisionError, get_cont_perc_int, str())
 
 from custom_nltk import word_tokenize
-from custom_nltk import gen_tokens, get_non_stop_words, get_content_percentage, get_cont_perc_int, get_text_and_content_length, get_substance
+from custom_nltk import gen_tokens, gen_ns_words, get_content_percentage, get_cont_perc_int, get_text_and_content_length, get_substance
 from custom_nltk import get_freq_dist, get_printable_freq_dist, get_counter_class_freq_dist, get_lexical_diversity_ratio, gen_english_vocab
 from custom_nltk import compare_unusual_words, get_all_lemmas, play_with_lemmas
 import unittest
@@ -79,7 +79,7 @@ class TestFreqDistFunctions(unittest.TestCase):
 		self.assertNotAlmostEqual(self.lex_div_ratio, 0.7619001)
 		self.assertLess(self.lex_div_ratio, .77)
 		self.assertLessEqual(self.lex_div_ratio, .7619000000000)
-		
+
 		
 
 
